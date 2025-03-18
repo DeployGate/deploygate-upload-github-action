@@ -1,0 +1,48 @@
+name: 'DeployGate Upload'
+description: 'Upload your Android/iOS app to DeployGate for testing and distribution'
+author: 'DeployGate Inc.'
+
+# Define explicit permissions
+permissions:
+  contents: read  # Only needs read access to repository contents
+
+inputs:
+  api_token:
+    description: 'DeployGate API token for authentication.'
+    required: true
+  owner_name:
+    description: 'Your DeployGate username or organization name where the app will be uploaded'
+    required: true
+  file_path:
+    description: "Path to your app's binary file (IPA for iOS, APK/AAB for Android). Must be a valid file path accessible to the action."
+    required: true
+  message:
+    description: 'Description of the uploaded file. This will be displayed on the DeployGate dashboard.'
+    required: false
+    default: ''
+  distribution_key:
+    description: "Distribution page's hash identifier. Use this to update an existing distribution."
+    required: false
+    default: ''
+  distribution_name:
+    description: "Name for the distribution page. If a page with this name doesn't exist, it will be created."
+    required: false
+    default: ''
+  release_note:
+    description: 'Release notes that will be displayed to users when they update the app.'
+    required: false
+    default: ''
+  disable_notify:
+    description: '(iOS only) Set to "true" to disable push notification emails to testers when the app is updated.'
+    required: false
+    default: 'false'
+outputs:
+  results:
+    description: 'DeployGate Upload API response results containing app details, version information, and download URLs'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'

@@ -1,0 +1,76 @@
+version: 2
+updates:
+  # npm パッケージの更新設定
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    # 重要な更新のみプルリクエストを作成
+    open-pull-requests-limit: 10
+    # メジャーバージョン以外自動更新
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    # 追加: PRのレビュー担当者設定
+    reviewers:
+      - "DeployGate/web-devs"
+    # 追加: 依存関係のグループ化を最適化
+    groups:
+      # 開発依存関係のグループ
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "prettier*"
+          - "jest*"
+      # プロダクション依存関係のグループ
+      production-dependencies:
+        patterns:
+          - "react*"
+          - "@react*"
+          - "next*"
+          - "@next*"
+      # その他の依存関係
+      other-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "eslint*"
+          - "prettier*"
+          - "jest*"
+          - "react*"
+          - "@react*"
+          - "next*"
+          - "@next*"
+
+  # GitHub Actionsの更新設定
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # 追加: PRの制限数設定
+    open-pull-requests-limit: 5

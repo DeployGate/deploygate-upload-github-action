@@ -1,0 +1,64 @@
+name: PR Test & Upload to DeployGate
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+
+      - name: Upload to DeployGate for Test
+        id: deploygate
+        uses: ./
+        with:
+          api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
+          owner_name: ${{ secrets.OWNER_NAME }}
+          file_path: ./.github/workflows/test-app/DeployGateSample.aab
+          message: "PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+          distribution_name: "PR Build distribution_name "
+          release_note: |
+            PR: #${{ github.event.pull_request.number }}
+            Title: ${{ github.event.pull_request.title }}
+            Branch: ${{ github.head_ref }}
+            Commit: ${{ github.sha }} 
+
+      - name: Debug Output
+        run: |
+          echo "All outputs:"
+          echo '${{ toJSON(steps.deploygate.outputs) }}'
+
+          echo "\nIndividual outputs:"
+          echo 'results: ${{ steps.deploygate.outputs.results }}'
+          echo 'name: ${{ fromJSON(steps.deploygate.outputs.results).name }}'
+          echo 'package_name: ${{ fromJSON(steps.deploygate.outputs.results).package_name }}'
+          echo 'os_name: ${{ fromJSON(steps.deploygate.outputs.results).os_name }}'
+          echo 'path: ${{ fromJSON(steps.deploygate.outputs.results).path }}'
+          echo 'revision: ${{ fromJSON(steps.deploygate.outputs.results).revision }}'
+          echo 'version_code: ${{ fromJSON(steps.deploygate.outputs.results).version_code }}'
+          echo 'version_name: ${{ fromJSON(steps.deploygate.outputs.results).version_name }}'
+          echo 'sdk_version: ${{ fromJSON(steps.deploygate.outputs.results).sdk_version }}'
+          echo 'target_sdk_version: ${{ fromJSON(steps.deploygate.outputs.results).target_sdk_version }}'
+          echo 'signature: ${{ fromJSON(steps.deploygate.outputs.results).signature }}'
+          echo 'message: ${{ fromJSON(steps.deploygate.outputs.results).message }}'
+          echo 'file: ${{ fromJSON(steps.deploygate.outputs.results).file }}'
+          echo 'md5: ${{ fromJSON(steps.deploygate.outputs.results).md5 }}'
+          echo 'icon: ${{ fromJSON(steps.deploygate.outputs.results).icon }}'
+          echo 'user: ${{ fromJSON(steps.deploygate.outputs.results).user }}'
