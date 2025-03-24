@@ -1,5 +1,9 @@
 name: Dependabot auto-merge
-on: pull_request
+on:
+  pull_request:
+    types: [opened, reopened]
+  pull_request_review:
+    types: [submitted]
 
 permissions:
   contents: write
@@ -8,7 +12,11 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: |
+      github.actor == 'dependabot[bot]' ||
+      (github.event_name == 'pull_request_review' && 
+       github.event.review.state == 'approved' &&
+       github.event.pull_request.user.login == 'dependabot[bot]')
     steps:
       - name: Check if PR is approved
         id: check-approval
