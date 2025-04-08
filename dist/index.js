@@ -28598,11 +28598,11 @@ function run() {
             while (retryCount < maxRetries) {
                 try {
                     response = yield axios_1.default.post(`https://deploygate.com/api/users/${ownerName}/apps`, formData, {
-                        headers: Object.assign(Object.assign({}, formData.getHeaders()), { 'Authorization': `Bearer ${apiToken}`, 'User-Agent': 'DeployGate-Upload-GitHub-Action/1.0.0' }),
-                        timeout: 300000,
+                        headers: Object.assign(Object.assign({}, formData.getHeaders()), { 'Authorization': `Bearer ${apiToken}`, 'User-Agent': 'DeployGate-Upload-GitHub-Action/v1' }),
+                        timeout: 900000,
                         maxContentLength: Infinity,
                         maxBodyLength: Infinity,
-                        // Add upload progress indicator
+                        maxRedirects: 5,
                         onUploadProgress: (progressEvent) => {
                             if (progressEvent.total) {
                                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -28617,7 +28617,7 @@ function run() {
                     lastError = error;
                     retryCount++;
                     if (retryCount < maxRetries) {
-                        const waitTime = Math.pow(2, retryCount) * 1000;
+                        const waitTime = Math.pow(2, retryCount) * 5000;
                         core.warning(`Upload failed, retrying in ${waitTime / 1000} seconds... (Attempt ${retryCount}/${maxRetries})`);
                         yield new Promise(resolve => setTimeout(resolve, waitTime));
                     }
