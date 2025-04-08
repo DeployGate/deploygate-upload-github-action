@@ -100,7 +100,7 @@ async function run(): Promise<void> {
         core.info('Sending request to DeployGate API...');
 
         // Add retry logic
-        const maxRetries = 3;
+        const maxRetries = 1;
         let retryCount = 0;
         let lastError: Error | null = null;
         let response: AxiosResponse<UploadResponse> | undefined;
