@@ -4,3 +4,4 @@ coverage/
 .env
 *.log
 - package-lock.json 
+.DS_Store

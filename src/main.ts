@@ -114,12 +114,12 @@ async function run(): Promise<void> {
                         headers: {
                             ...formData.getHeaders(),
                             'Authorization': `Bearer ${apiToken}`,
-                            'User-Agent': 'DeployGate-Upload-GitHub-Action/1.0.0',
+                            'User-Agent': 'DeployGate-Upload-GitHub-Action/v1',
                         },
-                        timeout: 300000,
+                        timeout: 900000,
                         maxContentLength: Infinity,
                         maxBodyLength: Infinity,
-                        // Add upload progress indicator
+                        maxRedirects: 5,
                         onUploadProgress: (progressEvent) => {
                             if (progressEvent.total) {
                                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -134,7 +134,7 @@ async function run(): Promise<void> {
                 lastError = error as Error;
                 retryCount++;
                 if (retryCount < maxRetries) {
-                    const waitTime = Math.pow(2, retryCount) * 1000;
+                    const waitTime = Math.pow(2, retryCount) * 5000;
                     core.warning(`Upload failed, retrying in ${waitTime / 1000} seconds... (Attempt ${retryCount}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                 }
