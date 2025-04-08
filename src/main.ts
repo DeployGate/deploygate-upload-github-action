@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import axios, { AxiosResponse } from 'axios';
+import https from 'https';
 import FormData from 'form-data';
 import * as path from 'path';
 
@@ -100,11 +101,14 @@ async function run(): Promise<void> {
         core.info('Sending request to DeployGate API...');
 
         // Add retry logic
-        const maxRetries = 3;
+        const maxRetries = 1;
         let retryCount = 0;
         let lastError: Error | null = null;
         let response: AxiosResponse<UploadResponse> | undefined;
 
+        const agent = new https.Agent({
+            keepAlive: true,
+        });
         while (retryCount < maxRetries) {
             try {
                 response = await axios.post<UploadResponse>(
@@ -114,12 +118,13 @@ async function run(): Promise<void> {
                         headers: {
                             ...formData.getHeaders(),
                             'Authorization': `Bearer ${apiToken}`,
-                            'User-Agent': 'DeployGate-Upload-GitHub-Action/1.0.0',
+                            'User-Agent': 'DeployGate-Upload-GitHub-Action/v1',
                         },
-                        timeout: 300000,
+                        timeout: 900000,
                         maxContentLength: Infinity,
                         maxBodyLength: Infinity,
-                        // Add upload progress indicator
+                        maxRedirects: 5,
+                        httpsAgent: agent,
                         onUploadProgress: (progressEvent) => {
                             if (progressEvent.total) {
                                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -131,10 +136,28 @@ async function run(): Promise<void> {
                 // Break the loop if successful
                 break;
             } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    core.setFailed(`Error Message: ${error.message}`);
+                    core.setFailed(`Error Code: ${error.code || 'N/A'}`);
+                    core.setFailed(`Error Status: ${error.response?.status || 'N/A'}`);
+                    core.setFailed(`Error Status Text: ${error.response?.statusText || 'N/A'}`);
+                    core.setFailed(`Error Response: ${JSON.stringify(error.response?.data || {}, null, 2)}`);
+                    core.setFailed(`Error Config: ${JSON.stringify({
+                        url: error.config?.url,
+                        method: error.config?.method,
+                        headers: error.config?.headers,
+                        timeout: error.config?.timeout,
+                    }, null, 2)}`);
+                } else if (error instanceof Error) {
+                    core.setFailed(`Error: ${error.message}`);
+                    core.setFailed(`Error Stack: ${error.stack || 'N/A'}`);
+                } else {
+                    core.setFailed(`Unknown Error: ${String(error)}`);
+                }
                 lastError = error as Error;
                 retryCount++;
                 if (retryCount < maxRetries) {
-                    const waitTime = Math.pow(2, retryCount) * 1000;
+                    const waitTime = Math.pow(2, retryCount) * 5000;
                     core.warning(`Upload failed, retrying in ${waitTime / 1000} seconds... (Attempt ${retryCount}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                 }

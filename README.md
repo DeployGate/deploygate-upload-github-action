@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Upload to DeployGate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.0
+        uses: DeployGate/deploygate-upload-github-action@v1.0.1
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -41,7 +41,7 @@ This action follows [Semantic Versioning](https://semver.org/). Version numbers 
 
 ### Version Reference
 
-When using this action, we recommend using the full version number (e.g., `@1.0.0`) rather than a major or minor version number (e.g., `@v1` or `@v1.0`). This ensures:
+When using this action, we recommend using the full version number (e.g., `@1.0.1`) rather than a major or minor version number (e.g., `@v1` or `@v1.0`). This ensures:
 
 - Consistent behavior in your workflows
 - Protection against unexpected breaking changes
@@ -49,7 +49,7 @@ When using this action, we recommend using the full version number (e.g., `@1.0.
 
 Example:
 ```yaml
-- uses: DeployGate/deploygate-upload-github-action@1.0.0  # Recommended
+- uses: DeployGate/deploygate-upload-github-action@1.0.1  # Recommended
 ```
 
 ## Input parameters
@@ -92,7 +92,7 @@ This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabo
 ### Basic Usage
 ```yaml
 - name: Upload to DeployGate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.0
+  uses: DeployGate/deploygate-upload-github-action@v1.0.1
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -104,7 +104,7 @@ This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabo
 ```yaml
 - name: Upload to DeployGate
   id: deploygate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.0
+  uses: DeployGate/deploygate-upload-github-action@v1.0.1
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -150,7 +150,7 @@ jobs:
 
       - name: Upload to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.0
+        uses: DeployGate/deploygate-upload-github-action@v1.0.1
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -185,7 +185,7 @@ jobs:
 
       - name: Upload AAB to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.0
+        uses: DeployGate/deploygate-upload-github-action@v1.0.1
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -223,7 +223,7 @@ jobs:
 
       - name: Upload APK to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.0
+        uses: DeployGate/deploygate-upload-github-action@v1.0.1
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -247,7 +247,7 @@ The `results` output contains the following structure:
   "path": "/path/to/app",
   "revision": 1,
   "version_code": "1",
-  "version_name": "1.0.0",
+  "version_name": "1.0.1",
   "sdk_version": 30,
   "target_sdk_version": "30",
   "message": "Upload message",
