@@ -28591,7 +28591,7 @@ function run() {
             formData.append('disable_notify', disableNotify.toString());
             core.info('Sending request to DeployGate API...');
             // Add retry logic
-            const maxRetries = 3;
+            const maxRetries = 1;
             let retryCount = 0;
             let lastError = null;
             let response;
