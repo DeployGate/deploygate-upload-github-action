@@ -131,6 +131,25 @@ async function run(): Promise<void> {
                 // Break the loop if successful
                 break;
             } catch (error) {
+
+                if (axios.isAxiosError(error)) {
+                    core.setFailed(`Error Message: ${error.message}`);
+                    core.setFailed(`Error Code: ${error.code || 'N/A'}`);
+                    core.setFailed(`Error Status: ${error.response?.status || 'N/A'}`);
+                    core.setFailed(`Error Status Text: ${error.response?.statusText || 'N/A'}`);
+                    core.setFailed(`Error Response: ${JSON.stringify(error.response?.data || {}, null, 2)}`);
+                    core.setFailed(`Error Config: ${JSON.stringify({
+                        url: error.config?.url,
+                        method: error.config?.method,
+                        headers: error.config?.headers,
+                        timeout: error.config?.timeout,
+                    }, null, 2)}`);
+                } else if (error instanceof Error) {
+                    core.setFailed(`Error: ${error.message}`);
+                    core.setFailed(`Error Stack: ${error.stack || 'N/A'}`);
+                } else {
+                    core.setFailed(`Unknown Error: ${String(error)}`);
+                }
                 lastError = error as Error;
                 retryCount++;
                 if (retryCount < maxRetries) {

@@ -28529,6 +28529,7 @@ const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const path = __importStar(__nccwpck_require__(1017));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e, _f, _g;
         try {
             // Input parameters with validation
             const apiToken = core.getInput('api_token', { required: true });
@@ -28614,6 +28615,26 @@ function run() {
                     break;
                 }
                 catch (error) {
+                    if (axios_1.default.isAxiosError(error)) {
+                        core.setFailed(`Error Message: ${error.message}`);
+                        core.setFailed(`Error Code: ${error.code || 'N/A'}`);
+                        core.setFailed(`Error Status: ${((_a = error.response) === null || _a === void 0 ? void 0 : _a.status) || 'N/A'}`);
+                        core.setFailed(`Error Status Text: ${((_b = error.response) === null || _b === void 0 ? void 0 : _b.statusText) || 'N/A'}`);
+                        core.setFailed(`Error Response: ${JSON.stringify(((_c = error.response) === null || _c === void 0 ? void 0 : _c.data) || {}, null, 2)}`);
+                        core.setFailed(`Error Config: ${JSON.stringify({
+                            url: (_d = error.config) === null || _d === void 0 ? void 0 : _d.url,
+                            method: (_e = error.config) === null || _e === void 0 ? void 0 : _e.method,
+                            headers: (_f = error.config) === null || _f === void 0 ? void 0 : _f.headers,
+                            timeout: (_g = error.config) === null || _g === void 0 ? void 0 : _g.timeout,
+                        }, null, 2)}`);
+                    }
+                    else if (error instanceof Error) {
+                        core.setFailed(`Error: ${error.message}`);
+                        core.setFailed(`Error Stack: ${error.stack || 'N/A'}`);
+                    }
+                    else {
+                        core.setFailed(`Unknown Error: ${String(error)}`);
+                    }
                     lastError = error;
                     retryCount++;
                     if (retryCount < maxRetries) {
