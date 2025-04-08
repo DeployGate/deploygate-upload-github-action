@@ -49,7 +49,7 @@ When using this action, we recommend using the full version number (e.g., `@1.0.
 
 Example:
 ```yaml
-- uses: DeployGate/deploygate-upload-github-action@1.0.1  # Recommended
+- uses: DeployGate/deploygate-upload-github-action@1.0.1 
 ```
 
 ## Input parameters
