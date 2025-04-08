@@ -28525,6 +28525,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
+const https_1 = __importDefault(__nccwpck_require__(5687));
 const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const path = __importStar(__nccwpck_require__(1017));
 function run() {
@@ -28596,6 +28597,9 @@ function run() {
             let retryCount = 0;
             let lastError = null;
             let response;
+            const agent = new https_1.default.Agent({
+                keepAlive: true,
+            });
             while (retryCount < maxRetries) {
                 try {
                     response = yield axios_1.default.post(`https://deploygate.com/api/users/${ownerName}/apps`, formData, {
@@ -28604,6 +28608,7 @@ function run() {
                         maxContentLength: Infinity,
                         maxBodyLength: Infinity,
                         maxRedirects: 5,
+                        httpsAgent: agent,
                         onUploadProgress: (progressEvent) => {
                             if (progressEvent.total) {
                                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);

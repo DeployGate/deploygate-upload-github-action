@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import axios, { AxiosResponse } from 'axios';
+import https from 'https';
 import FormData from 'form-data';
 import * as path from 'path';
 
@@ -105,6 +106,9 @@ async function run(): Promise<void> {
         let lastError: Error | null = null;
         let response: AxiosResponse<UploadResponse> | undefined;
 
+        const agent = new https.Agent({
+            keepAlive: true,
+        });
         while (retryCount < maxRetries) {
             try {
                 response = await axios.post<UploadResponse>(
@@ -120,6 +124,7 @@ async function run(): Promise<void> {
                         maxContentLength: Infinity,
                         maxBodyLength: Infinity,
                         maxRedirects: 5,
+                        httpsAgent: agent,
                         onUploadProgress: (progressEvent) => {
                             if (progressEvent.total) {
                                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
