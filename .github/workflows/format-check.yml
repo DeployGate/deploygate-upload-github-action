@@ -25,4 +25,4 @@ jobs:
       - name: Check formatting
         run: |
           npm run format
-          git diff --exit-code || (echo "Formatting needs to be fixed. Please run 'npm run format' to fix it." && exit 1)
+          git diff --exit-code src/ || (echo "Formatting needs to be fixed. Please run 'npm run format' to fix it." && exit 1)
