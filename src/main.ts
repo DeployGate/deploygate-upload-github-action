@@ -1,8 +1,10 @@
 import * as core from '@actions/core';
+import * as github from '@actions/github';
 import * as fs from 'fs';
 import FormData from 'form-data';
 import { request } from 'undici';
 import * as path from 'path';
+import * as QRCode from 'qrcode';
 
 interface UploadResponse {
   error: boolean;
@@ -28,6 +30,17 @@ interface UploadResponse {
       [key: string]: any;
     };
   };
+}
+
+interface PRComment {
+  id: number;
+  body: string;
+}
+
+interface GitHubComment {
+  id: number;
+  body: string;
+  [key: string]: any;
 }
 
 async function run(): Promise<void> {
@@ -174,6 +187,8 @@ async function run(): Promise<void> {
 
     // Set output as JSON string
     core.setOutput('results', JSON.stringify(response?.results));
+
+    await updateOrCreateComment(response?.results);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
@@ -203,6 +218,93 @@ function validateFilePath(filePath: string): string {
     throw new Error(`Not a file: ${resolvedPath}`);
   }
   return resolvedPath;
+}
+
+async function generateQRCode(url: string): Promise<string> {
+  try {
+    const qrDataURL = await QRCode.toDataURL(url);
+    return qrDataURL;
+  } catch (error) {
+    core.warning(`Failed to generate QR code: ${error}`);
+    return '';
+  }
+}
+
+async function findExistingComment(octokit: any, owner: string, repo: string, prNumber: number): Promise<PRComment | null> {
+  try {
+    const { data: comments } = await octokit.rest.issues.listComments({
+      owner,
+      repo,
+      issue_number: prNumber,
+    });
+
+    const deployGateComment = comments.find((comment: GitHubComment) =>
+      comment.body.includes('## DeployGate Upload Information')
+    );
+
+    return deployGateComment ? { id: deployGateComment.id, body: deployGateComment.body } : null;
+  } catch (error) {
+    core.warning(`Failed to fetch comments: ${error}`);
+    return null;
+  }
+}
+
+async function updateOrCreateComment(results: any): Promise<void> {
+  try {
+    const token = core.getInput('github_token', { required: true });
+    const octokit = github.getOctokit(token);
+    const context = github.context;
+
+    if (!context.payload.pull_request) {
+      core.info('Not a pull request. Skipping comment creation.');
+      return;
+    }
+
+    const prNumber = context.payload.pull_request.number;
+    let qrCodeImage = '';
+
+    if (results.distribution?.url) {
+      qrCodeImage = await generateQRCode(results.distribution.url);
+    }
+
+    const commentBody = `## DeployGate Upload Information
+
+- **Revision**: ${results.revision}
+- **App Details**: [View on DeployGate](${results.path})
+${results.distribution?.url ? `
+- **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
+${qrCodeImage ? `
+- **QR Code**:
+  ![QR Code](${qrCodeImage})` : ''}` : ''}
+`;
+
+    const existingComment = await findExistingComment(
+      octokit,
+      context.repo.owner,
+      context.repo.repo,
+      prNumber
+    );
+
+    if (existingComment) {
+      await octokit.rest.issues.updateComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: existingComment.id,
+        body: commentBody,
+      });
+      core.info('Updated existing comment');
+    } else {
+      await octokit.rest.issues.createComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: prNumber,
+        body: commentBody,
+      });
+      core.info('Created new comment');
+    }
+  } catch (error) {
+    core.warning(`Failed to update/create comment: ${error}`);
+  }
 }
 
 run();
