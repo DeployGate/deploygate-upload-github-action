@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import FormData from 'form-data';
 import { request } from 'undici';
 import * as path from 'path';
-import * as QRCode from 'qrcode';
 
 interface UploadResponse {
   error: boolean;
@@ -220,28 +219,6 @@ function validateFilePath(filePath: string): string {
   return resolvedPath;
 }
 
-async function generateQRCode(url: string): Promise<string> {
-  try {
-    core.info(`Generating QR code for URL: ${url}`);
-    const qrOptions = {
-      errorCorrectionLevel: 'H' as const,
-      type: 'image/png' as const,
-      quality: 0.92,
-      margin: 1,
-      width: 300
-    };
-    const qrDataURL = await QRCode.toDataURL(url, qrOptions);
-    core.info('QR code generation successful');
-    return qrDataURL;
-  } catch (error) {
-    core.warning(`Failed to generate QR code: ${error}`);
-    if (error instanceof Error) {
-      core.warning(`Error stack: ${error.stack}`);
-    }
-    return '';
-  }
-}
-
 async function findExistingComment(octokit: any, owner: string, repo: string, prNumber: number): Promise<PRComment | null> {
   try {
     const { data: comments } = await octokit.rest.issues.listComments({
@@ -273,17 +250,14 @@ async function updateOrCreateComment(results: any): Promise<void> {
     }
 
     const prNumber = context.payload.pull_request.number;
-    let qrCodeImage = '';
+    let qrCodeUrl = '';
 
     core.info(`Distribution URL: ${results.distribution?.url}`);
 
     if (results.distribution?.url) {
-      core.info('Generating QR code...');
-      qrCodeImage = await generateQRCode(results.distribution.url);
-      core.info(`Generated QR code length: ${qrCodeImage.length}`);
-      if (!qrCodeImage) {
-        core.warning('QR code generation failed or returned empty string');
-      }
+      core.info('Generating QR code URL...');
+      qrCodeUrl = `https://deploygate.com/qr?size=178&data=${encodeURIComponent(results.distribution.url)}`;
+      core.info(`Generated QR code URL: ${qrCodeUrl}`);
     } else {
       core.info('No distribution URL found');
     }
@@ -294,9 +268,9 @@ async function updateOrCreateComment(results: any): Promise<void> {
 - **App Details**: [View on DeployGate](${results.revision_url})
 ${results.distribution?.url ? `
 - **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
-${qrCodeImage ? `
+${qrCodeUrl ? `
 - **QR Code**:
-  ![QR Code](${qrCodeImage})` : ''}` : ''}
+  ![QR Code](${qrCodeUrl})` : ''}` : ''}
 `;
 
     core.info('Comment body preview:');
