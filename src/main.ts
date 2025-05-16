@@ -274,10 +274,10 @@ async function updateOrCreateComment(results: any): Promise<void> {
 
 | Item | Content |
 |:---|:---|
-| Revision | \`${results.revision}\` |
-| App Details | [View on DeployGate](${results.revision_url}) |${results.distribution?.url ? `
-| Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
-| QR Code | ![QR Code](${qrCodeUrl}) |` : ''}`;
+| 🔄 Revision | \`${results.revision}\` |
+| 📱 App Details | [View on DeployGate](${results.revision_url}) |${results.distribution?.url ? `
+| 🔗 Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
+| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |` : ''}`;
 
     core.info('Comment body preview:');
     core.info(commentBody);
