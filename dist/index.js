@@ -85619,6 +85619,9 @@ function run() {
             }
             core.setSecret(ownerName);
             const filePath = validateFilePath(core.getInput('file_path', { required: true }));
+            // Check if PR comment feature is enabled/disabled
+            const enablePrComment = core.getInput('enable_pr_comment').toLowerCase() !== 'false';
+            core.info(`PR comment feature is ${enablePrComment ? 'enabled' : 'disabled'}`);
             // File validation
             if (!fs.existsSync(filePath)) {
                 throw new Error(`File not found: ${filePath}`);
@@ -85724,7 +85727,12 @@ function run() {
             }
             // Set output as JSON string
             core.setOutput('results', JSON.stringify(response === null || response === void 0 ? void 0 : response.results));
-            yield updateOrCreateComment(response === null || response === void 0 ? void 0 : response.results);
+            if (enablePrComment) {
+                yield updateOrCreateComment(response === null || response === void 0 ? void 0 : response.results);
+            }
+            else {
+                core.info('Skipping PR comment creation as it is disabled');
+            }
         }
         catch (error) {
             if (error instanceof Error) {
@@ -85797,14 +85805,12 @@ function updateOrCreateComment(results) {
             }
             const commentBody = `## DeployGate Upload Information
 
-- **Revision**: ${results.revision}
-- **App Details**: [View on DeployGate](${results.revision_url})
-${((_c = results.distribution) === null || _c === void 0 ? void 0 : _c.url) ? `
-- **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
-${qrCodeUrl ? `
-- **QR Code**:
-  ![QR Code](${qrCodeUrl})` : ''}` : ''}
-`;
+| Item | Content |
+|:---|:---|
+| Revision | \`${results.revision}\` |
+| App Details | [View on DeployGate](${results.revision_url}) |${((_c = results.distribution) === null || _c === void 0 ? void 0 : _c.url) ? `
+| Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
+| QR Code | ![QR Code](${qrCodeUrl}) |` : ''}`;
             core.info('Comment body preview:');
             core.info(commentBody);
             const existingComment = yield findExistingComment(octokit, context.repo.owner, context.repo.repo, prNumber);

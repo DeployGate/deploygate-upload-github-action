@@ -14,13 +14,14 @@ jobs:
 
       - name: Upload to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@0.0.2
+        uses: DeployGate/deploygate-upload-github-action@v1.0.2
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: <your-deploygate-owner-name>
           file_path: /path/to/your/app/file.apk
           message: "PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
           distribution_name: "PR Build distribution_name"
+          enable_pr_comment: true
           release_note: |
             PR: #${{ github.event.pull_request.number }}
             Title: ${{ github.event.pull_request.title }}

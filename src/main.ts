@@ -59,6 +59,10 @@ async function run(): Promise<void> {
 
     const filePath = validateFilePath(core.getInput('file_path', { required: true }));
 
+    // Check if PR comment feature is enabled/disabled
+    const enablePrComment = core.getInput('enable_pr_comment').toLowerCase() !== 'false';
+    core.info(`PR comment feature is ${enablePrComment ? 'enabled' : 'disabled'}`);
+
     // File validation
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found: ${filePath}`);
@@ -187,7 +191,11 @@ async function run(): Promise<void> {
     // Set output as JSON string
     core.setOutput('results', JSON.stringify(response?.results));
 
-    await updateOrCreateComment(response?.results);
+    if (enablePrComment) {
+      await updateOrCreateComment(response?.results);
+    } else {
+      core.info('Skipping PR comment creation as it is disabled');
+    }
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
@@ -264,14 +272,12 @@ async function updateOrCreateComment(results: any): Promise<void> {
 
     const commentBody = `## DeployGate Upload Information
 
-- **Revision**: ${results.revision}
-- **App Details**: [View on DeployGate](${results.revision_url})
-${results.distribution?.url ? `
-- **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
-${qrCodeUrl ? `
-- **QR Code**:
-  ![QR Code](${qrCodeUrl})` : ''}` : ''}
-`;
+| Item | Content |
+|:---|:---|
+| Revision | \`${results.revision}\` |
+| App Details | [View on DeployGate](${results.revision_url}) |${results.distribution?.url ? `
+| Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
+| QR Code | ![QR Code](${qrCodeUrl}) |` : ''}`;
 
     core.info('Comment body preview:');
     core.info(commentBody);

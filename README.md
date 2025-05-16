@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Upload to DeployGate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.1
+        uses: DeployGate/deploygate-upload-github-action@v1.0.2
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -49,7 +49,7 @@ When using this action, we recommend using the full version number (e.g., `@1.0.
 
 Example:
 ```yaml
-- uses: DeployGate/deploygate-upload-github-action@1.0.1 
+- uses: DeployGate/deploygate-upload-github-action@v1.0.2
 ```
 
 ## Input parameters
@@ -64,6 +64,7 @@ Example:
 | `distribution_name` | ❌ | Distribution page's name |
 | `release_note` | ❌ | Message displayed during distribution page app updates |
 | `disable_notify` | ❌ | (iOS only) Disable Push notification emails |
+| `enable_pr_comment` | ❌ | Enable/Disable PR comment creation (Default: true) |
 
 ## Output
 
@@ -92,19 +93,21 @@ This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabo
 ### Basic Usage
 ```yaml
 - name: Upload to DeployGate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.1
+  uses: DeployGate/deploygate-upload-github-action@v1.0.2
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
     file_path: /path/to/app_file
-    message: "message example"
+    message: "PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+    distribution_name: "PR #${github.event.pull_request.number}"
+    enable_pr_comment: true
 ```
 
 ### Using Action Outputs
 ```yaml
 - name: Upload to DeployGate
   id: deploygate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.1
+  uses: DeployGate/deploygate-upload-github-action@v1.0.2
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -150,7 +153,7 @@ jobs:
 
       - name: Upload to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.1
+        uses: DeployGate/deploygate-upload-github-action@v1.0.2
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -185,7 +188,7 @@ jobs:
 
       - name: Upload AAB to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.1
+        uses: DeployGate/deploygate-upload-github-action@v1.0.2
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -223,7 +226,7 @@ jobs:
 
       - name: Upload APK to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.1
+        uses: DeployGate/deploygate-upload-github-action@v1.0.2
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
