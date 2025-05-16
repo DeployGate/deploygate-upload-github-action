@@ -91928,11 +91928,23 @@ function validateFilePath(filePath) {
 function generateQRCode(url) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const qrDataURL = yield QRCode.toDataURL(url);
+            core.info(`Generating QR code for URL: ${url}`);
+            const qrOptions = {
+                errorCorrectionLevel: 'H',
+                type: 'image/png',
+                quality: 0.92,
+                margin: 1,
+                width: 300
+            };
+            const qrDataURL = yield QRCode.toDataURL(url, qrOptions);
+            core.info('QR code generation successful');
             return qrDataURL;
         }
         catch (error) {
             core.warning(`Failed to generate QR code: ${error}`);
+            if (error instanceof Error) {
+                core.warning(`Error stack: ${error.stack}`);
+            }
             return '';
         }
     });
@@ -91956,7 +91968,7 @@ function findExistingComment(octokit, owner, repo, prNumber) {
 }
 function updateOrCreateComment(results) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
+        var _a, _b, _c;
         try {
             const token = core.getInput('github_token', { required: true });
             const octokit = github.getOctokit(token);
@@ -91967,19 +91979,30 @@ function updateOrCreateComment(results) {
             }
             const prNumber = context.payload.pull_request.number;
             let qrCodeImage = '';
-            if ((_a = results.distribution) === null || _a === void 0 ? void 0 : _a.url) {
+            core.info(`Distribution URL: ${(_a = results.distribution) === null || _a === void 0 ? void 0 : _a.url}`);
+            if ((_b = results.distribution) === null || _b === void 0 ? void 0 : _b.url) {
+                core.info('Generating QR code...');
                 qrCodeImage = yield generateQRCode(results.distribution.url);
+                core.info(`Generated QR code length: ${qrCodeImage.length}`);
+                if (!qrCodeImage) {
+                    core.warning('QR code generation failed or returned empty string');
+                }
+            }
+            else {
+                core.info('No distribution URL found');
             }
             const commentBody = `## DeployGate Upload Information
 
 - **Revision**: ${results.revision}
-- **App Details**: [View on DeployGate](${results.path})
-${((_b = results.distribution) === null || _b === void 0 ? void 0 : _b.url) ? `
+- **App Details**: [View on DeployGate](${results.revision_url})
+${((_c = results.distribution) === null || _c === void 0 ? void 0 : _c.url) ? `
 - **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
 ${qrCodeImage ? `
 - **QR Code**:
   ![QR Code](${qrCodeImage})` : ''}` : ''}
 `;
+            core.info('Comment body preview:');
+            core.info(commentBody);
             const existingComment = yield findExistingComment(octokit, context.repo.owner, context.repo.repo, prNumber);
             if (existingComment) {
                 yield octokit.rest.issues.updateComment({

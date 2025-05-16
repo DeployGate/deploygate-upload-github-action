@@ -222,10 +222,22 @@ function validateFilePath(filePath: string): string {
 
 async function generateQRCode(url: string): Promise<string> {
   try {
-    const qrDataURL = await QRCode.toDataURL(url);
+    core.info(`Generating QR code for URL: ${url}`);
+    const qrOptions = {
+      errorCorrectionLevel: 'H' as const,
+      type: 'image/png' as const,
+      quality: 0.92,
+      margin: 1,
+      width: 300
+    };
+    const qrDataURL = await QRCode.toDataURL(url, qrOptions);
+    core.info('QR code generation successful');
     return qrDataURL;
   } catch (error) {
     core.warning(`Failed to generate QR code: ${error}`);
+    if (error instanceof Error) {
+      core.warning(`Error stack: ${error.stack}`);
+    }
     return '';
   }
 }
@@ -263,20 +275,32 @@ async function updateOrCreateComment(results: any): Promise<void> {
     const prNumber = context.payload.pull_request.number;
     let qrCodeImage = '';
 
+    core.info(`Distribution URL: ${results.distribution?.url}`);
+
     if (results.distribution?.url) {
+      core.info('Generating QR code...');
       qrCodeImage = await generateQRCode(results.distribution.url);
+      core.info(`Generated QR code length: ${qrCodeImage.length}`);
+      if (!qrCodeImage) {
+        core.warning('QR code generation failed or returned empty string');
+      }
+    } else {
+      core.info('No distribution URL found');
     }
 
     const commentBody = `## DeployGate Upload Information
 
 - **Revision**: ${results.revision}
-- **App Details**: [View on DeployGate](${results.path})
+- **App Details**: [View on DeployGate](${results.revision_url})
 ${results.distribution?.url ? `
 - **Distribution Page**: [${results.distribution.url}](${results.distribution.url})
 ${qrCodeImage ? `
 - **QR Code**:
   ![QR Code](${qrCodeImage})` : ''}` : ''}
 `;
+
+    core.info('Comment body preview:');
+    core.info(commentBody);
 
     const existingComment = await findExistingComment(
       octokit,
