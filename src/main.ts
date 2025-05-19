@@ -227,7 +227,12 @@ function validateFilePath(filePath: string): string {
   return resolvedPath;
 }
 
-async function findExistingComment(octokit: any, owner: string, repo: string, prNumber: number): Promise<PRComment | null> {
+async function findExistingComment(
+  octokit: any,
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<PRComment | null> {
   try {
     const { data: comments } = await octokit.rest.issues.listComments({
       owner,
@@ -275,9 +280,13 @@ async function updateOrCreateComment(results: any): Promise<void> {
 | Item | Content |
 |:---|:---|
 | 🔄 Revision | \`${results.revision}\` |
-| 📱 App Details | [View on DeployGate](${results.revision_url}) |${results.distribution?.url ? `
+| 📱 App Details | [View on DeployGate](${results.revision_url}) |${
+      results.distribution?.url
+        ? `
 | 🔗 Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
-| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |` : ''}`;
+| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |`
+        : ''
+    }`;
 
     core.info('Comment body preview:');
     core.info(commentBody);

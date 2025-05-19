@@ -85808,9 +85808,11 @@ function updateOrCreateComment(results) {
 | Item | Content |
 |:---|:---|
 | 🔄 Revision | \`${results.revision}\` |
-| 📱 App Details | [View on DeployGate](${results.revision_url}) |${((_c = results.distribution) === null || _c === void 0 ? void 0 : _c.url) ? `
+| 📱 App Details | [View on DeployGate](${results.revision_url}) |${((_c = results.distribution) === null || _c === void 0 ? void 0 : _c.url)
+                ? `
 | 🔗 Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
-| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |` : ''}`;
+| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |`
+                : ''}`;
             core.info('Comment body preview:');
             core.info(commentBody);
             const existingComment = yield findExistingComment(octokit, context.repo.owner, context.repo.repo, prNumber);
