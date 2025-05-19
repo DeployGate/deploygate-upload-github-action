@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Upload to DeployGate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.2
+        uses: DeployGate/deploygate-upload-github-action@v1.1.0
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -49,7 +49,7 @@ When using this action, we recommend using the full version number (e.g., `@1.0.
 
 Example:
 ```yaml
-- uses: DeployGate/deploygate-upload-github-action@v1.0.2
+- uses: DeployGate/deploygate-upload-github-action@v1.1.0
 ```
 
 ## Input parameters
@@ -93,7 +93,7 @@ This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabo
 ### Basic Usage
 ```yaml
 - name: Upload to DeployGate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.2
+  uses: DeployGate/deploygate-upload-github-action@v1.1.0
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -107,7 +107,7 @@ This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabo
 ```yaml
 - name: Upload to DeployGate
   id: deploygate
-  uses: DeployGate/deploygate-upload-github-action@v1.0.2
+  uses: DeployGate/deploygate-upload-github-action@v1.1.0
   with:
     api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
     owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: Upload to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.2
+        uses: DeployGate/deploygate-upload-github-action@v1.1.0
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -188,7 +188,7 @@ jobs:
 
       - name: Upload AAB to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.2
+        uses: DeployGate/deploygate-upload-github-action@v1.1.0
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}
@@ -226,7 +226,7 @@ jobs:
 
       - name: Upload APK to DeployGate
         id: deploygate
-        uses: DeployGate/deploygate-upload-github-action@v1.0.2
+        uses: DeployGate/deploygate-upload-github-action@v1.1.0
         with:
           api_token: ${{ secrets.DEPLOYGATE_API_TOKEN }}
           owner_name: ${{ secrets.DEPLOYGATE_OWNER_NAME }}

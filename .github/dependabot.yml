@@ -25,9 +25,6 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-    # 追加: PRのレビュー担当者設定
-    reviewers:
-      - "enomoto-kazuya"
     # 追加: 依存関係のグループ化を最適化
     groups:
       # 開発依存関係のグループ
