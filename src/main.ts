@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as github from '@actions/github';
 import * as fs from 'fs';
 import FormData from 'form-data';
 import { request } from 'undici';
@@ -30,6 +31,17 @@ interface UploadResponse {
   };
 }
 
+interface PRComment {
+  id: number;
+  body: string;
+}
+
+interface GitHubComment {
+  id: number;
+  body: string;
+  [key: string]: any;
+}
+
 async function run(): Promise<void> {
   try {
     // Input parameters with validation
@@ -46,6 +58,10 @@ async function run(): Promise<void> {
     core.setSecret(ownerName);
 
     const filePath = validateFilePath(core.getInput('file_path', { required: true }));
+
+    // Check if PR comment feature is enabled/disabled
+    const enablePrComment = core.getInput('enable_pr_comment').toLowerCase() !== 'false';
+    core.info(`PR comment feature is ${enablePrComment ? 'enabled' : 'disabled'}`);
 
     // File validation
     if (!fs.existsSync(filePath)) {
@@ -174,6 +190,12 @@ async function run(): Promise<void> {
 
     // Set output as JSON string
     core.setOutput('results', JSON.stringify(response?.results));
+
+    if (enablePrComment) {
+      await updateOrCreateComment(response?.results);
+    } else {
+      core.info('Skipping PR comment creation as it is disabled');
+    }
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
@@ -203,6 +225,99 @@ function validateFilePath(filePath: string): string {
     throw new Error(`Not a file: ${resolvedPath}`);
   }
   return resolvedPath;
+}
+
+async function findExistingComment(
+  octokit: any,
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<PRComment | null> {
+  try {
+    const { data: comments } = await octokit.rest.issues.listComments({
+      owner,
+      repo,
+      issue_number: prNumber,
+    });
+
+    const deployGateComment = comments.find((comment: GitHubComment) =>
+      comment.body.includes('## DeployGate Upload Information')
+    );
+
+    return deployGateComment ? { id: deployGateComment.id, body: deployGateComment.body } : null;
+  } catch (error) {
+    core.warning(`Failed to fetch comments: ${error}`);
+    return null;
+  }
+}
+
+async function updateOrCreateComment(results: any): Promise<void> {
+  try {
+    const token = core.getInput('github_token', { required: true });
+    const octokit = github.getOctokit(token);
+    const context = github.context;
+
+    if (!context.payload.pull_request) {
+      core.info('Not a pull request. Skipping comment creation.');
+      return;
+    }
+
+    const prNumber = context.payload.pull_request.number;
+    let qrCodeUrl = '';
+
+    core.info(`Distribution URL: ${results.distribution?.url}`);
+
+    if (results.distribution?.url) {
+      core.info('Generating QR code URL...');
+      qrCodeUrl = `https://deploygate.com/qr?size=178&data=${encodeURIComponent(results.distribution.url)}`;
+      core.info(`Generated QR code URL: ${qrCodeUrl}`);
+    } else {
+      core.info('No distribution URL found');
+    }
+
+    const commentBody = `## DeployGate Upload Information
+
+| Item | Content |
+|:---|:---|
+| 🔄 Revision | \`${results.revision}\` |
+| 📱 App Details | [View on DeployGate](${results.revision_url}) |${
+      results.distribution?.url
+        ? `
+| 🔗 Distribution Page | [${results.distribution.url}](${results.distribution.url}) |
+| 📲 Open on Mobile | ![QR Code](${qrCodeUrl}) |`
+        : ''
+    }`;
+
+    core.info('Comment body preview:');
+    core.info(commentBody);
+
+    const existingComment = await findExistingComment(
+      octokit,
+      context.repo.owner,
+      context.repo.repo,
+      prNumber
+    );
+
+    if (existingComment) {
+      await octokit.rest.issues.updateComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: existingComment.id,
+        body: commentBody,
+      });
+      core.info('Updated existing comment');
+    } else {
+      await octokit.rest.issues.createComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: prNumber,
+        body: commentBody,
+      });
+      core.info('Created new comment');
+    }
+  } catch (error) {
+    core.warning(`Failed to update/create comment: ${error}`);
+  }
 }
 
 run();

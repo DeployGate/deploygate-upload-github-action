@@ -1,0 +1,9 @@
+# Dependabot関連のファイルの所有者
+/.github/dependabot.yml @enomoto-kazuya
+/package.json @enomoto-kazuya
+/package-lock.json @enomoto-kazuya
+/yarn.lock @enomoto-kazuya
+
+# アクションのソースコード
+/src/ @enomoto-kazuya
+/action.yml @enomoto-kazuya 

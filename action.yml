@@ -5,8 +5,17 @@ author: 'DeployGate Inc.'
 # Define explicit permissions
 permissions:
   contents: read  # Only needs read access to repository contents
+  pull-requests: write  # Needs write access to create/update PR comments
 
 inputs:
+  github_token:
+    description: 'GitHub token for creating/updating PR comments'
+    required: true
+    default: ${{ github.token }}
+  enable_pr_comment:
+    description: 'Whether to create/update PR comments with upload information'
+    required: false
+    default: 'true'
   api_token:
     description: 'DeployGate API token for authentication.'
     required: true
