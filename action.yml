@@ -49,8 +49,17 @@ outputs:
   results:
     description: 'DeployGate Upload API response results containing app details, version information, and download URLs'
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        npm ci
+
+    - name: Run DeployGate Upload Action
+      uses: 'node20'
+      run: |
+        npm run start
 
 branding:
   icon: 'upload-cloud'

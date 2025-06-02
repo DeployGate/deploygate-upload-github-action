@@ -5,9 +5,7 @@
     "main": "dist/index.js",
     "private": true,
     "scripts": {
-        "build": "ncc build src/main.ts -o dist",
-        "prepare": "npm run build",
-        "test": "jest",
+        "start": "ncc run src/main.ts",
         "format": "prettier --write \"src/**/*.ts\""
     },
     "dependencies": {
