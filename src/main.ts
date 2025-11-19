@@ -133,7 +133,6 @@ async function run(): Promise<void> {
               'User-Agent': 'DeployGate-Upload-GitHub-Action/v1',
             },
             body: formData,
-            maxRedirections: 5,
           }
         );
 
