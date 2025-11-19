@@ -1,6 +1,6 @@
 {
     "name": "deploygate-upload-action",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "description": "GitHub Action to upload an app to DeployGate",
     "main": "dist/index.js",
     "private": true,
