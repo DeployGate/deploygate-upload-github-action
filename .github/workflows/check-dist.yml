@@ -1,0 +1,39 @@
+name: Check dist
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  check-dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Compare dist/
+        run: |
+          # Use `git status --porcelain` instead of `git diff --exit-code` to also detect newly generated files
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            echo "dist/ is out of date. Please run 'npm ci && npm run build' and commit the result."
+            git status --porcelain dist/
+            git diff --stat dist/
+            exit 1
+          fi

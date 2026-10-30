@@ -81,12 +81,27 @@ MIT License
 1. Fork this repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add some amazing feature'`)
-4. Push the branch (`git push origin feature/amazing-feature`)
-5. Create a pull request
+4. Rebuild `dist/` with `npm ci && npm run build` (Node.js 20) and commit the result
+5. Push the branch (`git push origin feature/amazing-feature`)
+6. Create a pull request
+
+The `Check dist` workflow fails if the committed `dist/` is out of date.
 
 ## Maintenance
 
-This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabot) to keep dependencies up to date. Security updates are applied automatically.
+This action uses [Dependabot](https://docs.github.com/ja/code-security/dependabot) to keep dependencies up to date.
+
+Since the action runs the bundled `dist/index.js`, updates to runtime dependencies only take effect after `dist/` is rebuilt. When a Dependabot PR fails the `Check dist` workflow, rebuild `dist/` on its branch before merging:
+
+```sh
+gh pr checkout <PR number>
+npm ci && npm run build
+git add dist/
+git commit -m "chore(deps): rebuild dist"
+git push
+```
+
+Note that Dependabot stops rebasing a PR once someone else has pushed to it, so rebuild right before merging.
 
 ## Examples
 
